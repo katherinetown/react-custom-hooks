@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import BookCard from "./BookCard";
 import Modal from "react-modal";
 import useGoogleBooks from "../hooks/useGoogleBooks";
+import usePublishersBooks from "../hooks/usePublishersBooks";
 
 const customStyles = {
   content: {
@@ -16,11 +17,15 @@ const customStyles = {
 
 export default function BooksGrid({ query }) {
   const [modalIsOpen, setIsOpen] = useState(false);
+  const [publisher, setPublisher] = useState("");
 
   const { isLoading, error, books } = useGoogleBooks(query);
+  const { publishersBooks, isPublisherBooksLoading, publisherBooksError } =
+    usePublishersBooks(publisher, 3);
 
   function closeModal() {
     setIsOpen(false);
+    setPublisher("");
   }
 
   if (isLoading) return <p>Loading...</p>;
@@ -35,11 +40,15 @@ export default function BooksGrid({ query }) {
         ariaHideApp={false}
       >
         <div>
-          <h2>More books by this publisher</h2>
+          <h2 className="publisherbook">More books by this publisher</h2>
           <ul>
-            <li>Book 1</li>
-            <li>Book 2</li>
-            <li>Book 3</li>
+            {publishersBooks.map((book) => {
+              return (
+                <li key={book.id}>
+                  <h3 className="publisherbook">{book.volumeInfo.title}</h3>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </Modal>
@@ -50,6 +59,8 @@ export default function BooksGrid({ query }) {
             title={book.volumeInfo.title}
             imgUrl={book.volumeInfo}
             setIsOpen={setIsOpen}
+            booksPublisher={book.volumeInfo.publisher}
+            setPublisher={setPublisher}
           />
         );
       })}
